@@ -6,6 +6,11 @@
         <a class="nav-option" name="memory" href="./pairs.php">Play Pairs</a>
         <a class="nav-option" name="leaderboard" href="./leaderboard.php">Leaderboard</a>
         <?php if (!isset($_SESSION["uname"])) { ?><a class="nav-option" name="register" href="./registration.php">Register</a>
-        <?php } else { ?> <span class="nav-option"> <?php echo $_SESSION['uname'] ?> </span><a class="nav-option" name="logout" href="./logout.php">Logout</a> <?php } ?>
+        <?php } else { ?>
+                <div class="register-group">
+                    <img class="nav-option flex-center" src="./uploads/<?php echo sha1($_SESSION['uname']); ?>.jpg">
+                    <a class="nav-option" name="logout" href="./logout.php">Logout</a>
+                </div>
+        <?php } ?>
     </div>
 </nav>

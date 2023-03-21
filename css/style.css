@@ -35,27 +35,49 @@ body {
     display: flex;
     flex-flow: row nowrap;
 
-    align-items: center;
-    color: aliceblue;
-
     height: 100%;
 }
 a.nav-option {
+    align-items: center;
+    color: aliceblue;
+
     text-decoration: none;
 }
 
 .nav-group:first-child > * {
     justify-content: left;
-    padding-right: 3rem;
+    margin-right: 3rem;
 }
 .nav-group:last-child > * {
     justify-content: right;
-    padding-left: 3rem;
+    margin-left: 3rem;
+}
+.nav-group:last-child > .nav-option:last-child {
+    margin-left: 1.5rem;
+}
+img.nav-option {
+    border-radius: 2rem 2rem 2rem 2rem;
+    align-self: center;
+
+    aspect-ratio: 1/1;
+    height: 50%;
+    width: auto;
+}
+
+.register-group {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+}
+
+.register-group > img {
+    margin-right: 1.75rem;
 }
 
 #main {
     background-image: url('../src/arcade-unsplash.jpg');
     background-position: center center;
+    background-size: 100%;
 
     width: 100%;
     height: 92vh;
@@ -82,7 +104,6 @@ a.nav-option {
 
 
 /* Umbrella Classes */
-
 .flex-center {
     display: flex;
 
@@ -96,4 +117,8 @@ a.nav-option {
 
 .error {
     color: red;
+}
+
+.form-button {
+    width: 100%;
 }

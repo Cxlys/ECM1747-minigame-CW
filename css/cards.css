@@ -1,0 +1,34 @@
+.card-container {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+
+    width: 100vw;
+    height: auto;
+}
+
+.card-body {
+    aspect-ratio: 2/3;
+
+    height: 15rem;
+    width: auto;
+
+    background-color: white;
+}
+
+
+/* Animation states */
+.card-body[data-state="ready"] {
+    background-color: green;
+    transition: background-color 2s;
+}
+
+.card-body[data-state="turning"] {
+    width: 0.1rem;
+    background-color: white;
+}
+
+.card-body[data-state="turned"] {
+    width: 0.1rem;
+    background-color: white;
+}

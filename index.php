@@ -14,8 +14,13 @@ session_start();
 
     <div class="flex-center" id="main">
         <div class="center-container flex-center">
+            <?php if (isset($_SESSION['uname'])) { ?>
             <h1>Welcome to Pairs!</h1>
             <a href="pairs.php">Click here to continue...</a>
+            <?php } else { ?>
+            <h1>You're not using a registered session?</h1>
+            <a href="registration.php">Register now!</a>
+            <?php } ?>
         </div>
     </div>
 </body>
