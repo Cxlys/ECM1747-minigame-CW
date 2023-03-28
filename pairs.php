@@ -11,19 +11,34 @@ session_start();
 <body>
     <?php include_once "./includes/inc_navbar.php" ?>
 
-    <div id="main">
-        <!-- ready, turning, turned -->
+    <div id="main" class="flex-center flex-column">
+        <button onclick="gameLevel += 1; startNewRound()">Clear</button>
+        <button onclick="endGame()">Kill self</button>
+        <button onclick="resetGame()">Reset game</button>
+        <div class="game-container flex-center flex-column" id="container">
+            <div class="game-ui-container" id="game-ui-container">
+                <h3 id="level">Level: 0</h3>
+                <h3 id="lives">Lives: 5</h3>
+                <h3 id="score">Score: 0</h3>
+            </div>
+            <div class="game-play-container flex-center flex-column" id="game-play-container">
+                <div class="start-screen flex-column flex-center" id="start-screen" onclick="startGame(this)">
+                    <h1>Welcome to Pairs!</h1>
+                    <?php if (isset($_COOKIE[$_SESSION['uname'] . "&high_score"])) {
+                        echo "<h5>Your current high score: {$_COOKIE[$_SESSION['uname'] . "&high_score"]}</h5>";
+                    } ?>
+                    <p>Click here to continue...</p>
+                    <button class="game-button" id="start-game"><strong>Start</strong></button>
+                </div>
+                <!-- Card animation states: ready, turning, turned -->
+                <!-- Game states: inactive, active -->
+                <div class="card-set-container" id="card-pool" data-game-state="inactive">
 
-        <div class="card-container">
-            <div class="card-body" data-state="ready" onclick=""></div>
-            <div class="card-body" data-state="ready" onclick=""></div>
-            <div class="card-body" data-state="ready" onclick=""></div>
-            <div class="card-body" data-state="ready" onclick=""></div>
-            <div class="card-body" data-state="ready" onclick=""></div>
-            <div class="card-body" data-state="ready" onclick=""></div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
 
-<script src="./js/cards.js"></script>
+<script src="./js/cards.js" type="text/javascript"></script>
 </html>

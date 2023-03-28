@@ -122,3 +122,31 @@ img.nav-option {
 .form-button {
     width: 100%;
 }
+
+.leaderboard {
+    height: 90%;
+    width: 80%;
+
+    background-color: grey;
+    box-shadow: 5px 5px 5px 5px;
+}
+
+.leaderboard-table {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border: 2px solid;
+}
+
+.leaderboard-table th {
+    background-color: blue;
+    column-width: 5rem;
+    line-height: 2rem;
+}
+
+.leaderboard-table th:first-child {
+    text-align: left;
+    column-width: 10rem;
+}
+

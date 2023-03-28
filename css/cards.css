@@ -1,34 +1,100 @@
-.card-container {
+:root {
+    --dynamic-card-height: 25%;
+}
+
+.game-container {
+    height: 80%;
+    width: 90%;
+
+    box-shadow: 5px 5px 5px 5px;
+    background-color: grey;
+}
+.game-ui-container {
     display: flex;
     flex-flow: row nowrap;
-    justify-content: space-between;
 
-    width: 100vw;
-    height: auto;
+    justify-content: space-between;
+    align-items: center;
+
+    height: 10%;
+    width: 100%;
+
+    border-bottom: solid 2px;
+
+    padding: 0 2rem 0 2rem;
+}
+.game-play-container {
+    height: 90%;
+    width: 100%;
 }
 
-.card-body {
-    aspect-ratio: 2/3;
+.game-button {
+    background-color: white;
+    border: none;
+    border-radius: 10% 10% 10% 10%;
 
-    height: 15rem;
+    font-size: 1rem;
+
+    margin-top: 1rem;
+    width: 7rem;
+    height: 2rem;
+
+    transition: scale 200ms ease;
+}
+.game-button:hover {
+    scale: 110%;
+  }
+
+.start-screen {
+    opacity: 100%;
+    transition: opacity 300ms;
+}
+.start-screen[data-game-state="started"] {
+    opacity: 0.1%;
+}
+
+.card-set-container[data-game-state="active"] {
+    display: flex;
+    flex-flow: row wrap;
+
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+    height: 100%;
+}
+.card-container {
+    aspect-ratio: 4.05/5.95;
+
+    height: var(--dynamic-card-height);
     width: auto;
 
-    background-color: white;
+    margin: 2% 8% 0 8%;
+    /* Ensures future cards are wrapped around the container */
 }
+.card-body {
+    height: 100%;
+    width: 100%;
 
+    border: solid 0.1rem;
+
+    background-color: white;
+    background-position: center;
+    transition: scale 200ms, transform 300ms;
+}
+.card-body:hover {
+    scale: 105%;
+  }
 
 /* Animation states */
-.card-body[data-state="ready"] {
-    background-color: green;
-    transition: background-color 2s;
+.card-body[data-anim-state="ready"] {
+    background-image: url("../src/card-back.png");
+    background-size: 115%;
+}
+.card-body[data-anim-state="turning"] {
+    background-image: url("../src/card-back.png");
+    transform: scaleX(0);
+}
+.card-body[data-anim-state="turned"] {
 }
 
-.card-body[data-state="turning"] {
-    width: 0.1rem;
-    background-color: white;
-}
-
-.card-body[data-state="turned"] {
-    width: 0.1rem;
-    background-color: white;
-}
