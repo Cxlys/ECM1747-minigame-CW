@@ -16,7 +16,7 @@ session_start();
         <div class="center-container flex-center flex-column">
             <?php if (isset($_SESSION['uname'])) { ?>
             <h1>Welcome to Pairs!</h1>
-            <button onclick="window.location.href = 'pairs.php'">Click here to play...</button>
+            <button class="gen-button" onclick="window.location.href = 'pairs.php'">Click here to play...</button>
             <?php } else { ?>
             <h1>You're not using a registered session?</h1>
             <a href="registration.php">Register now!</a>

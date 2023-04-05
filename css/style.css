@@ -162,6 +162,26 @@ a.nav-option {
 #mouth { z-index: 2; }
 #eyes { z-index: 3; }
 
+.gen-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 6px 14px;
+    margin-top: 6px;
+    border-radius: 6px;
+
+    border: none;
+
+    background: navy;
+    color: white;
+    user-select: none;
+
+    transition: scale 200ms;
+}
+.gen-button:hover {
+    scale: 110%;
+}
 
 /* Umbrella Classes */
 .flex-center {

@@ -44,4 +44,5 @@ session_start();
 </body>
 
 <script src="./js/cards.js" type="text/javascript"></script>
+<script src="./js/papaparse.min.js" type="text/javascript"></script>
 </html>

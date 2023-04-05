@@ -16,6 +16,7 @@ const endScreen = elementFromHtml (`
     <form id="submit" method="POST" action="score.php">
         <h1>Game over!</h1>
         <h3>The cards were not in your favour...</h3>
+        <h3>Your score: 0</h3>
         <button class="game-button" onclick="resetGame()">Retry?</button>
         <button class="game-button" onclick="postToLeaderboard(this.parentElement)">Submit Score...</button>
         <span class="error" id="error"></span>
@@ -31,7 +32,10 @@ let gameLevel = 0
 let gamePoints = 0
 let levelPoints = 0
 let pointsPerLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-let playerUser = "";
+
+// Player information
+let playerUser = ""
+let leaderboardData = null
 
 //// Event callbacks for buttons
 // Callback to start game button
@@ -39,6 +43,23 @@ const startGame = async (el, user) => {
     if (startScreen == null) {
         startScreen = el
     }
+
+    playerUser = user ?? null
+    await fetch("./res/leaderboard.csv")
+        .then(res => res.text())
+        .then(par => Papa.parse(par))
+        .then(json => {
+            for (let i = 1; i < json.data.length; i++)
+                if (json.data[i][0] === playerUser) {
+                    leaderboardData = json.data[i]
+                    console.log(leaderboardData)
+                    break
+                }
+        })
+        .catch(err =>
+            // Leaderboard data will not set if fetch hits error, we can check for this later.
+            console.log(err)
+        )
 
     el.setAttribute("data-game-state", "started")
     await new Promise(res => setTimeout(res, 300))
@@ -136,7 +157,6 @@ function spawnCards(cardsToSpawn) {
 }
 async function handleCardFlip(element) {
     if (flipCollection.length >= allowedFlips || element.getAttribute("data-anim-state") === "turned") return
-    console.log(element)
     flipCollection.push(element)
 
     // Flip card animation
@@ -209,8 +229,12 @@ function updateUI() {
     if (gameLevel <= 10) scoreText.innerText = "Score: " + levelPoints
     else scoreText.innerText = "Total Score: " + gamePoints
 
-    document.documentElement.style.setProperty("--game-background",
-         (levelPoints > cookieData[gameLevel + 1]) ? "#FFD700" : "grey")
+    if (leaderboardData !== null) {
+        document.documentElement.style.setProperty(
+            "--game-background",
+            (levelPoints > leaderboardData[gameLevel + 2]) ? "#FFD700" : "grey"
+        )
+    }
 
     switch (gameLevel) {
         case 5:
@@ -277,6 +301,7 @@ function endGame() {
 
     let clone = endScreen.cloneNode(true)
     clone.children[0].children[0].innerText = endGameQuotes[Math.floor(Math.random() * endGameQuotes.length)]
+    clone.children[0].children[2].innerText = "Your score: " + gamePoints + ((gamePoints > leaderboardData[1]) ? " <- NEW HIGH SCORE!!" : "")
 
     document.getElementById("game-play-container").appendChild(clone)
 }
