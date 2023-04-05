@@ -1,5 +1,6 @@
 :root {
     --dynamic-card-height: 25%;
+    --game-background: grey;
 }
 
 .game-container {
@@ -7,7 +8,7 @@
     width: 90%;
 
     box-shadow: 5px 5px 5px 5px;
-    background-color: grey;
+    background-color: var(--game-background);
 }
 .game-ui-container {
     display: flex;
@@ -90,11 +91,14 @@
 .card-body[data-anim-state="ready"] {
     background-image: url("../src/card-back.png");
     background-size: 115%;
+
+    font-size: 0;
 }
 .card-body[data-anim-state="turning"] {
     background-image: url("../src/card-back.png");
     transform: scaleX(0);
 }
 .card-body[data-anim-state="turned"] {
+    font-size: 3vw;
 }
 

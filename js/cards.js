@@ -8,16 +8,21 @@ let startScreen = null
 // Templates
 const element = elementFromHtml (`
     <div class="card-container">
-        <div class="card-body" data-anim-state="ready" onclick="handleCardFlip(this)"></div>
+        <div class="card-body flex-center" data-anim-state="ready" onclick="handleCardFlip(this)"></div>
     </div>
 `)
 const endScreen = elementFromHtml (`
 <div class="flex-column flex-center" id="end-screen">
-    <h1>Game over!</h1>
-    <h3>The cards were not in your favour...</h3>
-    <button class="game-button" onclick="resetGame()">Retry?</button>
-    <button class="game-button" onclick="saveDataToSession()">Submit Score...</button>
-    <span class="error" id="error"></span>
+    <form id="submit" method="POST" action="score.php">
+        <h1>Game over!</h1>
+        <h3>The cards were not in your favour...</h3>
+        <button class="game-button" onclick="resetGame()">Retry?</button>
+        <button class="game-button" onclick="postToLeaderboard(this.parentElement)">Submit Score...</button>
+        <span class="error" id="error"></span>
+        
+        <input id="high-score" name="high-score" type="hidden" value="" />
+        <input id="score-per-level" name="score-per-level" type="hidden" value="" />
+    </form>
 </div>
 `)
 
@@ -25,11 +30,12 @@ const endScreen = elementFromHtml (`
 let gameLevel = 0
 let gamePoints = 0
 let levelPoints = 0
-let pointsPerLevel = []
+let pointsPerLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+let playerUser = "";
 
 //// Event callbacks for buttons
 // Callback to start game button
-const startGame = async (el) => {
+const startGame = async (el, user) => {
     if (startScreen == null) {
         startScreen = el
     }
@@ -54,8 +60,8 @@ function startNewRound() {
     // Reset the game board
     resetGameBoard()
 
-    // Give an extra failure for courtesy
-    allowedFailFlips += 1
+    // Give an extra few failures for balance based on game level
+    allowedFailFlips += 1 + gameLevel
 
     if (gameLevel >= 3) {
         allowedFlips = 3
@@ -83,14 +89,54 @@ function startNewRound() {
 // Pool stylistically supports 4 cards per row
 let flipCollection = []
 let allowedFlips = 2
-let allowedFailFlips = 4
+let allowedFailFlips = 9
 let correctCardCount = 0
 function spawnCards(cardsToSpawn) {
-    for (let i = 0; i < cardsToSpawn; i++) cardPool.appendChild(element.cloneNode(true))
+    const emojis = ['🤣', '😍', '👍', '🗿','🥺','🔥','😏','😭','💀','😩']
+    let usedEmojis = []
+    const generateNewRandomEmoji = () => {
+        if (usedEmojis.length === emojis.length)
+            usedEmojis = []
+
+        let randomIndex;
+
+        do randomIndex = Math.floor(Math.random() * emojis.length)
+        while (usedEmojis.includes(randomIndex))
+
+        usedEmojis.push(randomIndex)
+
+        return emojis[randomIndex]
+    }
+
+    if (cardsToSpawn % allowedFlips !== 0) console.log("Help")
+
+    // Generate cards in increments of 2,3 or 4 depending on the allowedFlips value, and append to elementList
+    let elementList = []
+    for (let i = 0; i < cardsToSpawn / allowedFlips; i++)  {
+        const emoji = generateNewRandomEmoji()
+
+        for (let j = 0; j < allowedFlips; j++) {
+            let clone = element.cloneNode(true)
+            clone.setAttribute("data-card-state", emoji)
+            clone.children[0].innerHTML = emoji
+
+            elementList.push(clone)
+        }
+    }
+
+    // Take elements from the list until the list is depleted
+    while (elementList.length > 0) {
+        let randomIndex = Math.floor(Math.random() * elementList.length)
+
+        cardPool.appendChild(elementList[randomIndex])
+        elementList.splice(randomIndex, 1)
+    }
+
     updateUI()
 }
 async function handleCardFlip(element) {
     if (flipCollection.length >= allowedFlips || element.getAttribute("data-anim-state") === "turned") return
+    console.log(element)
     flipCollection.push(element)
 
     // Flip card animation
@@ -99,12 +145,13 @@ async function handleCardFlip(element) {
     // Check if the amount of allowed flips have been flipped
     if (flipCollection.length === allowedFlips) {
         // Give time for the cards to turn
-        await new Promise(res => setTimeout(res, 600))
+        await new Promise(res => setTimeout(res, 500))
 
         // If they have been flipped, return true, else false
         const check = checkIfCorrectFlipped()
 
         // Regardless of if the flips were correct, reset the collection so that more may be flipped
+        const temp = flipCollection
         flipCollection = []
 
         // If correct, increment the flipped counter.
@@ -114,31 +161,33 @@ async function handleCardFlip(element) {
             // Calculate more points for each flip, and allocate more when at a higher level
             gamePoints += 100 * allowedFlips * (1 + gameLevel * 0.25)
             levelPoints += 100 * allowedFlips * (1 + gameLevel * 0.25)
+
             updateUI()
 
-            console.log(correctCardCount + ", " + cardPool.querySelectorAll(".card-container").length)
             if (correctCardCount === cardPool.querySelectorAll(".card-container").length) {
                 gameLevel += 1
                 if (gameLevel <= 10) {
-                    console.log("Pushing " + levelPoints + " to array")
-                    pointsPerLevel.push(levelPoints)
-
-                    console.log("Array now consists of " + pointsPerLevel.toString())
+                    // Push level points to array
+                    pointsPerLevel[gameLevel - 1] = levelPoints
                 }
                 startNewRound()
             }
         }
         // If not, simply reset the animation states, remove points and decrement failCounter
         else {
-            flipCollection.forEach(x => x.setAttribute("data-anim-state", "ready"))
+            console.log("Check is false, cards are not the same.\n")
+            temp.forEach(x => x.setAttribute("data-anim-state", "ready"))
             allowedFailFlips--
+
+            updateUI()
 
             if (allowedFailFlips <= 0) {
                 console.log("Ending game...")
+
                 endGame()
             }
-            gamePoints -= 75 * allowedFlips * (1 + gameLevel * 0.25)
-            levelPoints -= 75 * allowedFlips * (1 + gameLevel * 0.25)
+            gamePoints -= Math.max(0, 10 * allowedFlips * (1 + gameLevel * 0.25))
+            levelPoints -= Math.max(0, 10 * allowedFlips * (1 + gameLevel * 0.25))
         }
     }
 }
@@ -150,7 +199,7 @@ async function flipAnimationState(card) {
 function checkIfCorrectFlipped() {
     return flipCollection.every(
         // If every element in flipCollection has the same card state (same card)
-        x => x.getAttribute("data-card-state") === flipCollection[0].getAttribute("data-card-state")
+        x => x.parentElement.getAttribute("data-card-state") === flipCollection[0].parentElement.getAttribute("data-card-state")
     )
 }
 function updateUI() {
@@ -159,6 +208,9 @@ function updateUI() {
 
     if (gameLevel <= 10) scoreText.innerText = "Score: " + levelPoints
     else scoreText.innerText = "Total Score: " + gamePoints
+
+    document.documentElement.style.setProperty("--game-background",
+         (levelPoints > cookieData[gameLevel + 1]) ? "#FFD700" : "grey")
 
     switch (gameLevel) {
         case 5:
@@ -177,6 +229,7 @@ function updateUI() {
 }
 function resetGameBoard() {
     console.log("\nResetting game board...")
+
     // Remove all cards in the card pool
     cardPool.querySelectorAll(
         ".card-container").forEach(x => x.remove()
@@ -196,58 +249,42 @@ function resetGame() {
     gameLevel = 0
     gamePoints = 0
     allowedFlips = 2
-    allowedFailFlips = 4
-    pointsPerLevel = []
+    allowedFailFlips = 9
+    pointsPerLevel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     // Handle responsive UI
     cardPool.setAttribute("data-game-state", "inactive")
     document.getElementById("game-play-container").appendChild(startScreen).setAttribute("data-game-state", "")
     document.documentElement.style.setProperty('--dynamic-card-height', '25%')
 }
+const endGameQuotes =
+    [
+        "YOU DIED ⚔️",
+        "Better luck next time!",
+        "Skill issue.",
+        "You lose!",
+        "The cards were not in your favour... ♣️"
+    ]
 function endGame() {
+    // Push remaining level points to array
+    pointsPerLevel[gameLevel] = levelPoints;
+
     // End the game
     resetGameBoard()
-    saveDataToSession()
 
     console.log("Game ended!")
     cardPool.setAttribute("data-game-state", "inactive")
 
-    document.getElementById("game-play-container").appendChild(endScreen)
+    let clone = endScreen.cloneNode(true)
+    clone.children[0].children[0].innerText = endGameQuotes[Math.floor(Math.random() * endGameQuotes.length)]
+
+    document.getElementById("game-play-container").appendChild(clone)
 }
-function saveDataToSession() {
-    let gameData = {
-        "total": gamePoints,
-        "level_points": pointsPerLevel.toString()
-    }
+function postToLeaderboard(formElement) {
+    document.getElementById("high-score").value = gamePoints
+    document.getElementById("score-per-level").value = pointsPerLevel.toString()
 
-    let params = {
-        'method': "POST",
-        'headers': {
-            'Content-Type': "application/json; charset=utf-8"
-        },
-        'body': JSON.stringify(gameData)
-    }
-
-    fetch("score.php", params)
-        .catch(err => {
-            document.getElementById("error").innerText = "Unexpected error occurred.."
-            console.log(err)
-        })
-        .then(code => {
-            switch (code) {
-                case "100":
-                    document.getElementById("error").innerText = "Data has been successfully sent."
-                    console.log(code.text())
-                    break
-                case "101":
-                    document.getElementById("error").innerText = "Not logged in! Log in to save your data..."
-                    console.log(code.text())
-                    break;
-                default:
-                    console.log(code.text())
-                    break;
-            }
-        })
+    formElement.submit()
 }
 
 // Utility functions

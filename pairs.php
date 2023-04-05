@@ -18,16 +18,19 @@ session_start();
         <div class="game-container flex-center flex-column" id="container">
             <div class="game-ui-container" id="game-ui-container">
                 <h3 id="level">Level: 0</h3>
-                <h3 id="lives">Lives: 5</h3>
+                <h3 id="lives">Lives: 10</h3>
                 <h3 id="score">Score: 0</h3>
             </div>
             <div class="game-play-container flex-center flex-column" id="game-play-container">
-                <div class="start-screen flex-column flex-center" id="start-screen" onclick="startGame(this)">
+                <div class="start-screen flex-column flex-center" id="start-screen"
+                     onclick="startGame(this, <?php
+                     if (isset($_SESSION['uname'])) { echo "'{$_SESSION['uname']}'"; }
+                     else { echo "null"; }?>)">
                     <h1>Welcome to Pairs!</h1>
-                    <?php if (isset($_COOKIE[$_SESSION['uname'] . "&high_score"])) {
-                        echo "<h5>Your current high score: {$_COOKIE[$_SESSION['uname'] . "&high_score"]}</h5>";
+                    <?php if (isset($_SESSION['uname']) && isset($_COOKIE[$_SESSION['uname']])) {
+                        echo "<h5>Your current high score: {placeholder}</h5>";
                     } ?>
-                    <p>Click here to continue...</p>
+                    <p>Start the game!</p>
                     <button class="game-button" id="start-game"><strong>Start</strong></button>
                 </div>
                 <!-- Card animation states: ready, turning, turned -->

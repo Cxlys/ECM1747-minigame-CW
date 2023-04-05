@@ -2,54 +2,54 @@
 session_start();
 
 if (!isset($_SESSION['uname'])) {
-    echo "101";
+    echo "101: User is not logged in.";
     exit;
 }
 
-$data = json_decode(file_get_contents('php://input'), true);
+$score = $_POST['high-score'];
+$level_scores = explode(",", $_POST['score-per-level']);
+$data_buffer = null;
 
-if ($data) {
-    if (!isset($_COOKIE[$_SESSION['uname'] . "&high_score"])) {
-        setcookie($_SESSION['uname'] . "&high_score", $data['total']);
-    } else {
-        if ($_COOKIE[$_SESSION['uname'] . "&high_score"] < $data['total']) setcookie($_SESSION['uname'] . "&high_score", $data['total']);
-        else setcookie($_SESSION['uname'] . "&high_score", $_COOKIE[$_SESSION['uname'] . "&high_score"]);
-    }
-
-    $i = 0;
-    $temp = [];
-    $arr = explode(",", $data['level_points']);
-    if (isset($_COOKIE[$_SESSION['uname'] . "&score_per_level"])) {
-        $cookie_arr = json_decode($_COOKIE[$_SESSION['uname'] . "&score_per_level"]);
-
-        foreach ($arr as $point) {
-            if (isset($cookie_arr[$i])) {
-                if ($cookie_arr[$i] < $point) $temp[$i] = $point;
-                else $temp[$i] = $cookie_arr[$i];
-            } else {
-                $temp[$i] = $point;
-            }
-
-            $i++;
+$data = [];
+$i = 0;
+if (($handle = fopen("./res/leaderboard.csv", "r")) !== FALSE) {
+    while (($csvdata = fgetcsv($handle, 0, ",")) !== FALSE) {
+        $data[] = $csvdata;
+        if ($csvdata[0] == $_SESSION['uname']) {
+            $data_buffer = $csvdata;
+            unset($data[$i]);
         }
+        $i++;
     }
-    else {
-        $temp = $arr;
-    }
-
-    setcookie($_SESSION['uname'] . "&score_per_level", json_encode($temp));
-    echo "100";
+    fclose($handle);
+}
+else {
+    echo "Catastrophic error, contact server administrator.";
+    header("{$_SERVER["SERVER_PROTOCOL"]}. 404 Not Found");
 }
 
-// Find out a way to store this (database maybe, CSV stored on server could be an angle
+$fp = fopen('./res/leaderboard.csv', 'w');
+foreach ($data as $row) {
+    fputcsv($fp, $row);
+}
 
-/*
-        $_COOKIE[$_SESSION['uname']]["high_score"] =
-            ($_COOKIE[$_SESSION['uname']]["high_score"] > $data['total'] && isset($_COOKIE[$_SESSION['uname']]))
-                ? $data['total'] : $_COOKIE[$_SESSION['uname']]["high_score"];
+if ($data_buffer == null)
+    fputcsv($fp, explode(",",
+            $_SESSION['uname'] . "," .
+            $score . "," .
+            implode(",", $level_scores))
+    );
+else {
+    $data_buffer[1] = max($score, $data_buffer[1]);
+    for ($i = 2; $i < sizeof($data_buffer); $i++) {
+        // From 2 to 13 (lv0-lv10), compare values to score-per-level 0 to 10.
+        $data_buffer[$i] = max($level_scores[$i - 2], $data_buffer[$i]);
+    }
 
-        $_COOKIE[$_SESSION['uname']]["scores_per_level"] =
-            ($_COOKIE[$_SESSION['uname']]["scores_per_level"] > $data['total'] && isset($_COOKIE[$_SESSION['uname']]))
-                ? $data['level_points'] : $_COOKIE[$_SESSION['uname']]["scores_per_level"];
+    fputcsv($fp, $data_buffer);
+}
 
-*/
+header("Location: leaderboard.php");
+exit;
+
+?>

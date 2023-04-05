@@ -1,0 +1,54 @@
+/* Leaderboard Table styles */
+.leaderboard {
+    height: 90%;
+    width: 80%;
+
+    background-color: grey;
+    box-shadow: 5px 5px 5px 5px;
+}
+
+.leaderboard-table {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-spacing: 2px;
+}
+
+.leaderboard-table th {
+    background-color: blue;
+    color: white;
+
+    column-width: 5rem;
+    line-height: 2rem;
+}
+
+.leaderboard-table th:first-child {
+    text-align: left;
+    column-width: 10rem;
+}
+
+.leaderboard-table th:last-child {
+    text-align: right;
+    column-width: 8rem;
+}
+
+.leaderboard-table td:first-child {
+    text-align: left;
+}
+
+.leaderboard-table td {
+    text-align: center;
+}
+
+.leaderboard-table td:last-child {
+    text-align: right;
+}
+
+.leaderboard-table tr:nth-child(2n) {
+    background-color: white;
+}
+
+.leaderboard-table tr {
+    background-color: lightgray;
+}

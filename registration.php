@@ -21,7 +21,36 @@ if (isset($_SESSION['uname'])) {
                 <input type="text" name="uname" placeholder="Insert username here!"><br><br>
 
                 <label>Profile Image</label><br>
-                <input type="file" name="avatar"><br><br>
+                <div class="image-generator-container">
+                    <div class="image-generator-left flex-column">
+                        <div class="selector" id="eyes-select">
+                            <button type="button" onclick="cycleArray('eyes', -1)"><</button>
+                            <span>Eyes</span>
+                            <button type="button" onclick="cycleArray('eyes', 1)">></button>
+                        </div>
+                        <div class="selector" id="mouth-select">
+                            <button type="button" onclick="cycleArray('mouth', -1)"><</button>
+                            <span>Mouth</span>
+                            <button type="button" onclick="cycleArray('mouth', 1)">></button>
+                        </div>
+                        <div class="selector" id="color-select">
+                            <button type="button" onclick="cycleArray('skin', -1)"><</button>
+                            <span>Color</span>
+                            <button type="button" onclick="cycleArray('skin', 1)">></button>
+                        </div>
+                    </div>
+                    <div class="image-generator-right flex-center">
+                        <div class="emoji-preview">
+                            <img alt="eyes" id="eyes" src="./src/emojis/eyes/closed.png">
+                            <img alt="mouth" id="mouth" src="./src/emojis/mouth/open.png">
+                            <img alt="skin" id="skin" src="./src/emojis/skin/green.png">
+
+                            <input type="hidden" id="e-val" name="eyes" value="closed">
+                            <input type="hidden" id="m-val" name="mouth" value="open">
+                            <input type="hidden" id="s-val" name="skin" value="green">
+                        </div>
+                    </div>
+                </div>
 
                 <button class="form-button" type="submit">Register</button>
             </form><br>
@@ -33,15 +62,11 @@ if (isset($_SESSION['uname'])) {
                 echo "<span class='error'>Username or profile picture was empty!</span>";
             } elseif (strpos($fullUrl, "signup=setmatch")) {
                 echo "<span class='error'>Username contained invalid characters!</span>";
-            } elseif (strpos($fullUrl, "signup=file")) {
-                echo "<span class='error'>File was invalid! Please submit only files of type .jpg or .png</span>";
-            } elseif (strpos($fullUrl, "signup=file")) {
-                echo "<span class='error'>An unexpected error occured when uploading your file, please try again</span>";
-            } elseif (strpos($fullUrl, "signup=filesize")) {
-                echo "<span class='error'>File invalid! We enforce a maximum file size of 40kB, and the file must be of type PNG, JPG or JPEG.</span>";
             }
             ?>
         </div>
     </div>
 </body>
+
+<script src="./js/emoji.js"></script>
 </html>
