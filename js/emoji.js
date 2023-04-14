@@ -10,6 +10,7 @@ let e = 0;
 let m = 0;
 let s = 0;
 
+// I could definitely do this better with a circular queue but it would take more effort to implement than just doing this
 function cycleArray(name, num) {
     switch (name) {
         case "eyes":
