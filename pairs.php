@@ -18,7 +18,10 @@ session_start();
         <div class="game-container flex-center flex-column" id="container">
             <div class="game-ui-container" id="game-ui-container">
                 <h3 id="level">Level: 0</h3>
-                <h3 id="lives">Lives: 10</h3>
+                <div class="">
+                    <h3 id="lives">Lives: 10</h3>
+                    <div id="timer">3:00</div>
+                </div>
                 <h3 id="score">Score: 0</h3>
             </div>
             <div class="game-play-container flex-center flex-column" id="game-play-container">

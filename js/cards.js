@@ -7,7 +7,7 @@ let startScreen = null
 
 // Templates
 const element = elementFromHtml (`
-    <div class="card-container">
+    <div class="card-container" data-message-to-user="Don't look, cheater.">
         <div class="card-body flex-center" data-anim-state="ready" onclick="handleCardFlip(this)"></div>
     </div>
 `)
@@ -39,6 +39,7 @@ let leaderboardData = null
 
 //// Event callbacks for buttons
 // Callback to start game button
+let timer
 const startGame = async (el, user) => {
     if (startScreen == null) {
         startScreen = el
@@ -64,6 +65,19 @@ const startGame = async (el, user) => {
     el.setAttribute("data-game-state", "started")
     await new Promise(res => setTimeout(res, 300))
 
+    // Start timer
+    timer = setInterval(function() {
+        const minutes = Math.floor(180 / 60);
+        let seconds = countdown % 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        document.getElementById("timer").innerHTML = minutes + ":" + seconds;
+        countdown--;
+        if (countdown < 0) {
+            clearInterval(timer);
+            endGame()
+        }
+    }, 1000); // run the function every second
+
     el.remove()
     initialise()
 }
@@ -77,12 +91,17 @@ function initialise() {
     startNewRound()
 }
 
+const cardCountPerLevel = [4, 8, 12, 6, 9, 12, 8, 12, 16, 20, 24]
 function startNewRound() {
+
     // Reset the game board
     resetGameBoard()
 
     // Give an extra few failures for balance based on game level
-    allowedFailFlips += 1 + gameLevel
+    if (gameLevel <= 10) {
+        allowedFailFlips += 1 + gameLevel;
+        resetTimer(180)
+    }
 
     if (gameLevel >= 3) {
         allowedFlips = 3
@@ -93,13 +112,15 @@ function startNewRound() {
         spawnCards(40)
         updateUI()
 
+        allowedFailFlips += 5;
+
+        clearInterval(timer)
+        document.getElementById("timer").remove()
         return
     }
 
     // Calculate number of cards to spawn based on stage
-    const cardsToSpawn = (allowedFlips * 2) + (allowedFlips * 2) *
-        (gameLevel - ((allowedFlips - 2) * 3))
-
+    const cardsToSpawn = cardCountPerLevel[gameLevel]
     spawnCards(cardsToSpawn)
 
     // Update UI interface
@@ -107,7 +128,6 @@ function startNewRound() {
 }
 
 //// Card pool spawning and clearing
-// Pool stylistically supports 4 cards per row
 let flipCollection = []
 let allowedFlips = 2
 let allowedFailFlips = 9
@@ -155,6 +175,36 @@ function spawnCards(cardsToSpawn) {
 
     updateUI()
 }
+function updateUI() {
+    levelText.innerText = "Level: " + ((gameLevel <= 10) ? gameLevel : "Endless!")
+    livesText.innerText = "Lives: " + allowedFailFlips
+
+    if (gameLevel <= 10) scoreText.innerText = "Score: " + levelPoints
+    else scoreText.innerText = "Total Score: " + gamePoints
+
+    if (leaderboardData !== null) {
+        document.documentElement.style.setProperty(
+            "--game-background",
+            (levelPoints > leaderboardData[gameLevel + 2]) ? "#FFD700" : "grey"
+        )
+    }
+
+    switch (gameLevel) {
+        case 5:
+            document.documentElement.style.setProperty('--dynamic-card-height', '20%')
+            document.documentElement.style.setProperty('--dynamic-margin', '8%')
+            break
+        case 9:
+            document.documentElement.style.setProperty('--dynamic-margin', '4%')
+            break
+        case 10:
+            document.documentElement.style.setProperty('--dynamic-card-height', '15%')
+            document.documentElement.style.setProperty('--dynamic-margin', '4%')
+            break
+    }
+}
+
+//// Game logic
 async function handleCardFlip(element) {
     if (flipCollection.length >= allowedFlips || element.getAttribute("data-anim-state") === "turned") return
     flipCollection.push(element)
@@ -222,35 +272,6 @@ function checkIfCorrectFlipped() {
         x => x.parentElement.getAttribute("data-card-state") === flipCollection[0].parentElement.getAttribute("data-card-state")
     )
 }
-function updateUI() {
-    levelText.innerText = "Level: " + ((gameLevel <= 10) ? gameLevel : "Endless!")
-    livesText.innerText = "Lives: " + allowedFailFlips
-
-    if (gameLevel <= 10) scoreText.innerText = "Score: " + levelPoints
-    else scoreText.innerText = "Total Score: " + gamePoints
-
-    if (leaderboardData !== null) {
-        document.documentElement.style.setProperty(
-            "--game-background",
-            (levelPoints > leaderboardData[gameLevel + 2]) ? "#FFD700" : "grey"
-        )
-    }
-
-    switch (gameLevel) {
-        case 5:
-            document.documentElement.style.setProperty('--dynamic-card-height', '15%')
-            break
-        case 8:
-            document.documentElement.style.setProperty('--dynamic-card-height', '10%')
-            break
-        case 9:
-            document.documentElement.style.setProperty('--dynamic-card-height', '8%')
-            break
-        case 10:
-            document.documentElement.style.setProperty('--dynamic-card-height', '6%')
-            break
-    }
-}
 function resetGameBoard() {
     console.log("\nResetting game board...")
 
@@ -279,7 +300,11 @@ function resetGame() {
     // Handle responsive UI
     cardPool.setAttribute("data-game-state", "inactive")
     document.getElementById("game-play-container").appendChild(startScreen).setAttribute("data-game-state", "")
+
+    // Reset CSS variables to default
     document.documentElement.style.setProperty('--dynamic-card-height', '25%')
+    document.documentElement.style.setProperty('--dynamic-margin', '8%')
+
 }
 const endGameQuotes =
     [
@@ -301,7 +326,8 @@ function endGame() {
 
     let clone = endScreen.cloneNode(true)
     clone.children[0].children[0].innerText = endGameQuotes[Math.floor(Math.random() * endGameQuotes.length)]
-    clone.children[0].children[2].innerText = "Your score: " + gamePoints + ((gamePoints > leaderboardData[1]) ? " <- NEW HIGH SCORE!!" : "")
+    if (leaderboardData != null) clone.children[0].children[2].innerText = "Your score: " + gamePoints + ((gamePoints > leaderboardData[1]) ? " <- NEW HIGH SCORE!!" : "");
+    else clone.children[0].children[2].innerText = "Your score: " + gamePoints;
 
     document.getElementById("game-play-container").appendChild(clone)
 }
@@ -318,4 +344,19 @@ function elementFromHtml(html) {
     template.innerHTML = html.trim();
 
     return template.content.firstElementChild;
+}
+function resetTimer(time) {
+    clearInterval(timer);
+    countdown = time;
+    timer = setInterval(function() {
+        const minutes = Math.floor(countdown / 60);
+        let seconds = countdown % 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds; // add a leading zero if seconds < 10
+        document.getElementById("timer").innerHTML = minutes + ":" + seconds;
+        countdown--;
+        if (countdown < 0) {
+            clearInterval(timer);
+            endGame()
+        }
+    }, 1000); // run the function every second
 }

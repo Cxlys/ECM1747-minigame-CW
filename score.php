@@ -49,7 +49,6 @@ else {
     fputcsv($fp, $data_buffer);
 }
 
-echo "Finished.";
 header("Location: leaderboard.php");
 exit;
 
